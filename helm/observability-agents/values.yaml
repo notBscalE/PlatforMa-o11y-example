@@ -1,0 +1,43 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/EXAMPLE_REPO
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets:
+  - name: ghcr-pull-secret
+
+serviceAccount:
+  create: true
+  name: observability-agents
+  annotations: {}  # eks.amazonaws.com/role-arn set by ArgoCD/Terraform
+
+service:
+  type: ClusterIP
+  port: 8080
+
+env:
+  PROMETHEUS_URL: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
+  ARGOCD_URL: "http://argocd-server.argocd.svc.cluster.local:80"
+  APP_HEALTH_URL: "http://platformma-platformma-app.platformma.svc.cluster.local/health"
+  GITHUB_REPO: "EXAMPLE_REPO"
+  GITHUB_REPO_URL: "https://github.com/EXAMPLE_REPO.git"
+  AWS_REGION: "us-east-1"
+  CLUSTER_NAME: "platformma"
+
+# Secret 'observability-agents-secrets' is created by Terraform from
+# GitHub Actions secrets ANTHROPIC_API_KEY and AGENTS_GITHUB_TOKEN.
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# CronJob for periodic health checks (every 5 minutes)
+cronJob:
+  enabled: true
+  schedule: "*/5 * * * *"

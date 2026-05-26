@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-platformma-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    # kube-prometheus-stack picks up rules with this label
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: platformma.alerts
+      interval: 30s
+      rules:
+        - alert: PlatformmaAppDown
+          expr: up{job=~".*platformma.*"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            namespace: platformma
+          annotations:
+            summary: "Platformma app is down"
+            description: "No healthy targets for the platformma app."
+
+        - alert: PlatformmaHighRestarts
+          expr: increase(kube_pod_container_status_restarts_total{namespace="platformma"}[15m]) > 3
+          for: 0m
+          labels:
+            severity: high
+            namespace: platformma
+          annotations:
+            summary: "Platformma pods restarting frequently"
+            description: "A pod in namespace platformma has restarted more than 3 times in the last 15 minutes."
+
+        - alert: PlatformmaPodsNotReady
+          expr: kube_deployment_status_replicas_ready{namespace="platformma"} < kube_deployment_spec_replicas{namespace="platformma"}
+          for: 2m
+          labels:
+            severity: high
+            namespace: platformma
+          annotations:
+            summary: "Platformma deployment has unready pods"
+            description: "Platformma deployment has fewer ready replicas than desired."
+
+        - alert: PlatformmaNodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "EKS node is not ready"
+            description: "An EKS node has been in NotReady state for more than 2 minutes."

@@ -1,0 +1,56 @@
+kube-prometheus-stack:
+  prometheus:
+    service:
+      type: LoadBalancer
+    prometheusSpec:
+      retention: 7d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp2
+            resources:
+              requests:
+                storage: 10Gi
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+
+  grafana:
+    service:
+      type: LoadBalancer
+    admin:
+      existingSecret: grafana-admin-secret
+      userKey: admin-user
+      passwordKey: admin-password
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+
+  kubeStateMetrics:
+    enabled: true
+
+  nodeExporter:
+    enabled: true
+
+  kubelet:
+    enabled: true
+
+  coreDns:
+    enabled: true
+
+  alertmanager:
+    config:
+      global:
+        resolve_timeout: 5m
+      route:
+        group_by:
+          - alertname
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 1h
+        receiver: observability-agents
+      receivers:
+        - name: observability-agents
+          webhook_configs:
+            - url: http://observability-agents.observability-agents.svc.cluster.local:8080/webhook/alertmanager
+              send_resolved: true

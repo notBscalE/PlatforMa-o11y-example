@@ -1,0 +1,23 @@
+# Copy to terraform.tfvars and fill in your values
+
+# Observability agents
+# anthropic_api_key and github_token are NOT set here — pass them as
+# TF_VAR_anthropic_api_key / TF_VAR_github_token environment variables,
+# or store them as GitHub Actions secrets (ANTHROPIC_API_KEY, AGENTS_GITHUB_TOKEN).
+agents_image_tag = "latest"
+
+aws_region         = "us-east-1"
+cluster_name       = "platformma"
+cluster_version    = "1.30"
+my_ip              = "1.2.3.4/32"   # replace with: curl -s https://checkip.amazonaws.com/
+ssh_key_name       = "my-aws-keypair"
+node_instance_type = "t3.medium"
+node_desired_count = 2
+node_min_count     = 2
+node_max_count     = 4
+github_repo             = "https://github.com/user/repo.git"
+state_bucket_name       = "platformma-terraform-state"
+vpc_cidr                = "10.0.0.0/16"
+grafana_admin_password  = "change-me"
+prometheus_retention    = "7d"
+prometheus_storage_size = "10Gi"
