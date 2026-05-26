@@ -141,7 +141,8 @@ The agents wake up from three sources:
 │
 ├── incidents/                  Auto-generated incident reports (markdown)
 └── github-ci-workflow/
-    └── pipeline.yml            CI/CD pipeline (not saved in .github/workflows to avoid unattended CI triggering - Change after fork
+    └── pipeline.yml            CI/CD pipeline (not saved in .github/workflows to avoid
+                                unattended CI triggering - Change after fork
 ```
 
 ---
